@@ -6,7 +6,7 @@ Created on 5 nov. 2014
 
 
 import requests
-from util.config import Config
+from classes.config import Config
 import json
 
 class Rest(object):
