@@ -29,7 +29,7 @@ class SuperClass(object):
     @classmethod
     def instanceIndependentMethod(cls):
         # Method is independent from individual instances
-        # Dependendt from class
+        # Dependent from class
         # Note: the self parameter is changed to the cls parameter.
         pass
 

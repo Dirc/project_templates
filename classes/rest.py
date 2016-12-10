@@ -1,7 +1,8 @@
 '''
-Created on 5 nov. 2014
+Created on 10 dec 2016
 
-@author: borstg
+@author: Dirc
+Based on borstg
 '''
 
 
@@ -15,91 +16,88 @@ class Rest(object):
     '''    
     config = Config()    
 
-    def __init__(self):
+    def __init__(self,
+                 url  = config.getConfig("rest", "url"),
+                 user = config.getConfig("rest", "username"),
+                 pwd  = config.getConfig("rest", "password"),
+                 header_format = "application/json"):
         '''
         Constructor
         '''
-        self.session = requests.Session()
-        self.verify = False
-        self.urlRoot = self.config.getConfigVar('waaa', 'waaa_url')
-        self.auth = (self.config.getConfigVar('waaa', 'waaa_user'),self.config.getConfigVar('waaa', 'waaa_pswd'))
+        self.urlRoot       = url
+        self.auth          = (user, pwd)
+        self.header_format = header_format
+        self.verify        = False
+        self.session       = requests.Session()
 
-    def restGet(self, uri, queryParms=None):
-        urlStr = self.urlRoot + uri
-        if self.config.isDebugEnabled():
-            print '>>>> DEBUG <<<< ' + Rest.restGet.__name__ + ': urlStr=' + urlStr 
-            
-        headers = {'Accept': 'application/json'}        
-        response = self.session.get(urlStr, params=queryParms , headers=headers, verify=self.verify)       
-        if self.config.isDebugEnabled():
-                print Rest.restGet.__name__ + ' response content:', response.content
-                
-        if response.status_code != requests.codes.get('ok'):            
-            print Rest.restGet.__name__ + ' error-text:', response.content
-            raise RestException('RestException http-status=' + str(response.status_code))
+    def printError(self, url, response):
+            print "URL: " + url            
+            print "Error-text: ", response.content
+            print "http-status = s" + str(response.status_code)
+
+        
+    def get(self, uri, queryParms=None):
+        url = self.urlRoot + uri
+        headers = {'Accept': self.header_format} 
+        # of: requests.get(...)           
+        response = self.session.get(url, 
+                                    params  = queryParms, 
+                                    headers = headers, 
+                                    verify  = self.verify,
+                                    auth    = self.auth)       
+        # Error        
+        if response.status_code != requests.codes.get('ok'):
+            self.printError(url, response)
+        # Response
+        return response.json()
+
+    def post(self, uri, queryParms=None, data=None):
+        url = self.urlRoot + uri
+        headers = {'Content-type': self.header_format}
+        response = requests.post(url, 
+                                 params  = queryParms, 
+                                 headers = headers, 
+                                 verify  = self.verify,
+                                 auth    = self.auth,
+                                 data    = data)
+        # Error        
+        if response.status_code not in (requests.codes.get('ok'), requests.codes.get('no_content')):
+            self.printError(url, response)
+        # Response
+        #return response.json()
+
+    def put(self, uri, queryParms=None, data=None):
+        url = self.urlRoot + uri
+        headers = {'Content-type': self.header_format,'Accept': self.header_format}
+        response = requests.put(url, 
+                                params  = queryParms, 
+                                headers = headers, 
+                                verify  = self.verify,
+                                auth    = self.auth,
+                                data    = data)
+        # Error
+        if response.status_code not in (requests.codes.get('ok'), requests.codes.get('no_content')):
+            self.printError(url, response)
+        # Response
         return response.json()
      
-    def restDel(self, uri, queryParms=None):
-        urlStr = self.urlRoot + uri
-        if self.config.isDebugEnabled():
-            print '>>>> DEBUG <<<< ' + Rest.restDel.__name__ + ': urlStr=' + urlStr
-        response = self.session.delete(urlStr, params=queryParms, verify=self.verify, auth=self.auth) 
-        if self.config.isDebugEnabled():
-                print Rest.restDel.__name__ + ' response content:', response.content     
-        
+    def dell(self, uri, queryParms=None):
+        url = self.urlRoot + uri
+        response = self.session.delete(url, 
+                                       params  = queryParms,
+                                       verify  = self.verify,
+                                       auth    = self.auth)
+                                        
         if response.status_code not in (requests.codes.get('ok'), requests.codes.get('no_content')):
-            print Rest.restDel.__name__ + ' error-text:', response.content
-            raise RestException('RestException http-status=' + str(response.status_code))
-
-    def restPost (self, uri, queryParms=None, jsonInput=None):
-        urlStr = self.urlRoot + uri
-        if self.config.isDebugEnabled():
-            print '>>>> DEBUG <<<< ' + Rest.restPost.__name__ + ': urlStr=' + urlStr
-            print '>>>> DEBUG <<<< ' + Rest.restPost.__name__ + ': payload=', jsonInput
-        headers = {'Content-type': 'application/json'}
-        response = requests.post(urlStr, headers=headers, params=queryParms, data=jsonInput, verify=self.verify, auth=self.auth)
-        if self.config.isDebugEnabled():
-                print Rest.restPost.__name__ + ' response content:', response.content
-        
-        if response.status_code not in (requests.codes.get('ok'), requests.codes.get('no_content')):
-            print Rest.restPost.__name__ + ' error-text:', response.content
-            raise RestException('RestException http-status=' + str(response.status_code))
-
-    def restPut (self, uri, queryParms=None, jsonInput=None):
-        urlStr = self.urlRoot + uri
-        if self.config.isDebugEnabled():
-            print '>>>> DEBUG <<<< ' + Rest.restPut.__name__ + ': urlStr=' + urlStr
-            print '>>>> DEBUG <<<< ' + Rest.restPut.__name__ + ': jsonInput=', jsonInput
-        headers = {'Content-type': 'application/json','Accept': 'application/json'}
-        response = requests.put(urlStr, headers=headers, params=queryParms, data=jsonInput, verify=self.verify, auth=self.auth)
-        if self.config.isDebugEnabled():
-                print Rest.restPut.__name__ + ' response content:', response.content
-        
-        if response.status_code not in (requests.codes.get('ok'), requests.codes.get('no_content')):
-            print Rest.restPut.__name__ + ' error-text:', response.content
-            raise RestException('RestException http-status=' + str(response.status_code))
-        return response.json()
+            self.printError(url, response)
+        # Response
+        #return response.json()
         
         
-class RestException(Exception):
-    '''
-    classdocs
-    '''
-
-
-    def __init__(self, value):
-        '''
-        Constructor
-        '''
-        self.value = value
-        
-    def __str__ (self):
-        return repr(self.value)
-
 if __name__ == '__main__':
     rest = Rest()
-    waaaUrl = rest.config.getConfigVar('waaa', 'waaa_url')
-    output = rest.restGet('appservers/e1wa04')
+    uri = "testuri"
+    output = rest.get(uri)
     print output
-    output = rest.restGet('lpars/lsrv3028')
+    output = rest.get(uri)
     print output

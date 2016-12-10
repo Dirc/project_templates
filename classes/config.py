@@ -1,7 +1,8 @@
 '''
 Created on 5 nov. 2014
 
-@author: borstg
+@author1: borstg
+@author2: cornete
 '''
 import ConfigParser
 import os
@@ -22,7 +23,7 @@ class Config(object):
         self.config_file = os.path.join(self.app_base,self.rel_conf_file)
         self.config.read(self.config_file)
         
-    def getConfigVar(self, item, key):
+    def getConfig(self, item, key):
         return self.config.get(item,key)
     
     def getSections(self):
