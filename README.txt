@@ -1,5 +1,5 @@
 Package: util
-- config: configparser example using the local_config_exmaple
+- config: configparser example using the conf/config.cfg
 - rest: Rest Api class based on the request module/library
 - optionparsing: simple example
 - place_files: simple commandline file management
@@ -10,3 +10,7 @@ ToDo:
 - log file class
 - xml templates
 - site-packages
+- Add unittests
+- Create simple Rest class
+
+
