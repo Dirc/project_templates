@@ -12,13 +12,14 @@ class Config(object):
     '''
     config = ConfigParser.ConfigParser()
 
-    def __init__(self):
+    def __init__(self, conf_filename):
         '''
         Constructor
         '''    
+        self.conf_filename = conf_filename
         self.config = ConfigParser.ConfigParser()
         self.app_base = os.path.dirname(os.path.dirname(__file__))
-        self.config_file = os.path.join(self.app_base,'local_config_template','local_sm9_sync.cfg')
+        self.config_file = os.path.join(self.app_base,'config_templates',self.conf_filename)
         self.config.read(self.config_file)
         
     def getConfigVar(self, item, key):
@@ -33,5 +34,5 @@ class Config(object):
     
     
 if __name__ == '__main__':    
-        conf = Config()
-        print conf.config_file
+        config = Config()
+        print config.config_file

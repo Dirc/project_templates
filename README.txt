@@ -4,4 +4,9 @@ Package: util
 - optionparsing: simple example
 - place_files: simple commandline file management
 - manipulate_files(2): simple example on reading and parsing text files
+- unit tests
 
+ToDo:
+- log file class
+- xml templates
+- site-packages
